@@ -17,138 +17,92 @@
 ## 3. CRUD Operations
 - **Create**: Inserting documents into collections using `insertOne()` or `insertMany()`.
     ```javascript
-    db.collection('authors').insertOne({ name: 'John Doe', nationality: 'American' })
+    db.collection('authors').insertOne({ name: 'John Doe', nationality: 'American' });
     ```
 - **Read**: Querying data using `find()`.
     ```javascript
-    db.collection('authors').find({ name: 'John Doe' })
+    db.collection('authors').find({ name: 'John Doe' });
     ```
 - **Update**: Updating documents with `$set` and other update operators.
     ```javascript
-    db.collection('authors').updateOne({ name: 'John Doe' }, { $set: { nationality: 'British' } })
+    db.collection('authors').updateOne({ name: 'John Doe' }, { $set: { nationality: 'British' } });
     ```
 - **Delete**: Removing documents using `deleteOne()` and `deleteMany()`.
     ```javascript
-    db.collection('authors').deleteOne({ name: 'John Doe' })
+    db.collection('authors').deleteOne({ name: 'John Doe' });
     ```
 
-## 4. Working with MongoDB in Node.js
-- **Setting up Node.js with MongoDB using mongoose and mongodb libraries**.
+## 4. Indexes in MongoDB
+- **What are indexes**: Indexes are special data structures that improve query performance by reducing the number of documents MongoDB needs to scan.
+- **Why use indexes**:
+  - Improve query speed.
+  - Optimize sorting operations.
+  - Support unique constraints.
+- **Types of indexes**:
+  - **Single-field index**:
     ```javascript
-    const { MongoClient } = require('mongodb');
-    MongoClient.connect('mongodb://localhost:27017/myDatabase')
+    db.collection.createIndex({ field: 1 }); // Ascending order
     ```
-- **Connecting to MongoDB from Node.js**.
+  - **Compound index**:
     ```javascript
-    MongoClient.connect('mongodb://localhost:27017')
+    db.collection.createIndex({ field1: 1, field2: -1 });
     ```
-- **Handling asynchronous operations with async/await**:
+  - **Text index**:
     ```javascript
-    const client = await MongoClient.connect(url, { useUnifiedTopology: true });
-    const db = client.db('myDatabase');
+    db.collection.createIndex({ field: "text" });
     ```
+  - **Multikey index**:
+    ```javascript
+    db.collection.createIndex({ arrayField: 1 });
+    ```
+  - **Geospatial index**:
+    ```javascript
+    db.collection.createIndex({ location: "2dsphere" });
+    ```
+  - **Unique index**:
+    ```javascript
+    db.collection.createIndex({ username: 1 }, { unique: true });
+    ```
+  - **Sparse index**:
+    ```javascript
+    db.collection.createIndex({ optionalField: 1 }, { sparse: true });
+    ```
+  - **TTL index**:
+    ```javascript
+    db.collection.createIndex({ timestamp: 1 }, { expireAfterSeconds: 3600 });
+    ```
+- **How to view indexes**:
+    ```javascript
+    db.collection.getIndexes();
+    ```
+- **Querying with indexes**: Use `.explain()` to analyze index usage:
+    ```javascript
+    db.collection.find({ field: value }).explain("executionStats");
+    ```
+- **Impact on write operations**: Indexes may slow down writes due to additional overhead of maintaining the index.
 
-## 5. MongoDB Queries
-- **Filtering data with query operators** (`$gt`, `$lt`, `$in`, `$ne`, etc.).
-    ```javascript
-    db.collection('authors').find({ age: { $gt: 30 } })
-    ```
-- **Sorting and limiting results**.
-    ```javascript
-    db.collection('authors').find().sort({ name: 1 }).limit(5)
-    ```
-- **Using projection to select specific fields**.
-    ```javascript
-    db.collection('authors').find({}, { projection: { name: 1, nationality: 1 } })
-    ```
-
-- **Understanding how indexes improve query speed**: Indexes reduce the time MongoDB needs to scan collections.
-
-## 6. Aggregation in MongoDB
+## 5. Aggregation in MongoDB
 - **Introduction to the aggregation pipeline**: A powerful tool to perform data transformations and analysis.
 - **Using stages like `$match`, `$group`, `$sort`, `$project` for data manipulation**:
     ```javascript
     db.collection('authors').aggregate([
       { $match: { nationality: 'American' } },
       { $group: { _id: '$nationality', count: { $sum: 1 } } }
-    ])
+    ]);
     ```
 
-## 7. Relationships in MongoDB
+## 6. Relationships in MongoDB
 - **One-to-many relationships**: Using embedded documents and references.
     ```javascript
     db.collection('authors').insertOne({
       name: 'John Doe',
       books: [{ title: 'Book One', year: 2021 }]
-    })
+    });
     ```
 - **Many-to-many relationships**: Using references with `ObjectId` for related collections.
     ```javascript
     db.collection('books').insertOne({
       title: 'Book One',
       authorId: ObjectId('605c72ef1532072ee6db9f2')
-    })
-    ```
-
-## 9. MongoDB and Express.js
-- **Integrating MongoDB with Express.js for building full-stack applications**:
-    ```javascript
-    const express = require('express');
-    const { MongoClient } = require('mongodb');
-    const app = express();
-
-    MongoClient.connect('mongodb://localhost:27017/myDatabase')
-      .then((client) => {
-        const db = client.db();
-        app.get('/authors', (req, res) => {
-          db.collection('authors').find().toArray((err, authors) => {
-            if (err) return res.status(500).send(err);
-            res.json(authors);
-          });
-        });
-      })
-      .catch((err) => console.error('Failed to connect', err));
-    ```
-
-## 10. Data Modeling in MongoDB
-- **Designing schemas for MongoDB with proper relationships and data structure**.
-- **Understanding the trade-offs between embedding and referencing documents**.
-    - **Embedding**: Storing related data within a document.
-    - **Referencing**: Storing references to related data across collections.
-
-## 11. Error Handling and Validation
-- **Handling errors during database operations**:
-    ```javascript
-    db.collection('authors').insertOne({ name: 'John' }).catch((err) => {
-      console.error('Error inserting document:', err);
     });
     ```
-- **Using Mongoose validation for data consistency**.
-
-## 12. Backup and Restore Data
-- **Methods for backing up MongoDB databases**:
-    ```bash
-    mongodump --db myDatabase --out /path/to/backup
-    ```
-- **Restoring data from backups**:
-    ```bash
-    mongorestore --db myDatabase /path/to/backup/myDatabase
-    ```
-
-## 13. Security in MongoDB
-- **Setting up authentication and authorization in MongoDB**:
-    ```bash
-    mongod --auth
-    ```
-- **Using roles and permissions to control access to data**.
-- **Enabling SSL and securing MongoDB connections**.
-
-## 14. MongoDB Cloud (MongoDB Atlas)
-- **Introduction to MongoDB Atlas, a cloud-hosted MongoDB service**.
-- **Setting up MongoDB Atlas clusters**.
-- **Connecting a Node.js app to a MongoDB Atlas database**.
-
-## 15. MongoDB Best Practices
-- **Performance tips for optimizing MongoDB queries**.
-- **Data consistency and handling large datasets**.
-- **Regularly monitoring and maintaining MongoDB instances**.

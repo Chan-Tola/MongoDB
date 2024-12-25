@@ -24,11 +24,16 @@ connectToDb((err) => {
 // Route to handle GET request on /author
 app.get("/author", (req, res) => {
   let authors = []; // Array to hold author data
+  // current page
+  const page = req.query.p|| 0;
+  const authorsPage = 3;
 
   // Use cursor.forEach to go through each document and add it to the authors array
   db.collection("Author")
     .find() // Query all documents from the 'Author' collection
     .sort({ author: 1 }) // Sort the documents by the 'author' field in ascending order
+    .skip(page * authorsPage)
+    .limit(authorsPage)
     .forEach((author) => authors.push(author)) // Go through each author document and add it to the authors array
     .then(() => {
       // After collecting all the documents in the authors array, send the array as a JSON response
